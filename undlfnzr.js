@@ -1,5 +1,15 @@
 function Undlfnzr(config) {
+	var defaults = {
+		errorTolerance: 2
+	};
+
 	this._config = config || {};
+
+	if(typeof config.errorTolerance == "undefined") {
+		this._config._errorTolerance = defaults.errorTolerance;
+	} else {
+		this._config._errorTolerance = config.errorTolerance;
+	}
 };
 
 Undlfnzr.prototype = {
@@ -58,17 +68,17 @@ Undlfnzr.prototype = {
 	},
 	_recursiveFind: function(node, query, matches) {
 		var distanceToNode = this.levenshteinDistance(this.bktree[node].value, query);
+		var lowerLimit = distanceToNode - this._config._errorTolerance;
+		var upperLimit = distanceToNode + this._config._errorTolerance;
 
-		if(distanceToNode <= 1) {
+		if(distanceToNode <= this._config._errorTolerance) {
 			matches.push(this.bktree[node].value);
 		}
 
-		for(var i=0; i<this.bktree[node].children.length; i++) {
-			var child      = this.bktree[node].children[i];
-			var lowerLimit = distanceToNode-1;
-			var upperLimit = distanceToNode+1;
+		for (var i = 0; i < this.bktree[node].children.length; i++) {
+			var child = this.bktree[node].children[i];
 
-			if(child.distance >= lowerLimit && child.distance <= upperLimit) {
+			if (child.distance >= lowerLimit && child.distance <= upperLimit) {
 				this._recursiveFind(child.id, query, matches);
 			}
 		}
